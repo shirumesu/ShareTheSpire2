@@ -1,0 +1,74 @@
+<Project Sdk="Godot.NET.Sdk/4.5.0">
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>true</ImplicitUsings>
+    <Nullable>disable</Nullable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <AssemblyName>ShareTheSpire2</AssemblyName>
+    <NoWarn>$(NoWarn);CS0436;CS1998;CS8632;STS002</NoWarn>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <IsWindows>false</IsWindows>
+    <IsLinux>false</IsLinux>
+    <IsOSX>false</IsOSX>
+    <IsWindows Condition="$([MSBuild]::IsOSPlatform('Windows'))">true</IsWindows>
+    <IsLinux Condition="$([MSBuild]::IsOSPlatform('Linux'))">true</IsLinux>
+    <IsOSX Condition="$([MSBuild]::IsOSPlatform('OSX'))">true</IsOSX>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(IsWindows)' == 'true'">
+    <SteamRoot Condition="'$(SteamRoot)' == ''">$(registry:HKEY_CURRENT_USER\Software\Valve\Steam@SteamPath)</SteamRoot>
+    <SteamLibraryPath Condition="'$(SteamLibraryPath)' == '' and '$(SteamRoot)' != ''">$(SteamRoot)\steamapps</SteamLibraryPath>
+    <Sts2Path Condition="'$(Sts2Path)' == ''">$([System.IO.Path]::Combine('$(SteamLibraryPath)', 'common', 'Slay the Spire 2'))</Sts2Path>
+    <Sts2DataDir Condition="'$(Sts2DataDir)' == ''">$([System.IO.Path]::Combine('$(Sts2Path)', 'data_sts2_windows_x86_64'))</Sts2DataDir>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(IsLinux)' == 'true'">
+    <SteamLibraryPath Condition="'$(SteamLibraryPath)' == ''">$([System.IO.Path]::Combine('$(HOME)', '.local', 'share', 'Steam', 'steamapps'))</SteamLibraryPath>
+    <Sts2Path Condition="'$(Sts2Path)' == ''">$([System.IO.Path]::Combine('$(SteamLibraryPath)', 'common', 'Slay the Spire 2'))</Sts2Path>
+    <Sts2DataDir Condition="'$(Sts2DataDir)' == ''">$([System.IO.Path]::Combine('$(Sts2Path)', 'data_sts2_linuxbsd_x86_64'))</Sts2DataDir>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(IsOSX)' == 'true'">
+    <SteamLibraryPath Condition="'$(SteamLibraryPath)' == ''">$([System.IO.Path]::Combine('$(HOME)', 'Library', 'Application Support', 'Steam', 'steamapps'))</SteamLibraryPath>
+    <Sts2Path Condition="'$(Sts2Path)' == ''">$([System.IO.Path]::Combine('$(SteamLibraryPath)', 'common', 'Slay the Spire 2'))</Sts2Path>
+    <Sts2DataDir Condition="'$(Sts2DataDir)' == ''">$([System.IO.Path]::Combine('$(Sts2Path)', 'data_sts2_macos_x86_64'))</Sts2DataDir>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="0Harmony">
+      <HintPath>$(Sts2DataDir)/0Harmony.dll</HintPath>
+    </Reference>
+    <Reference Include="sts2">
+      <HintPath>$(Sts2DataDir)/sts2.dll</HintPath>
+      <Publicize>true</Publicize>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="mod_manifest.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="BepInEx.AssemblyPublicizer.MSBuild" Version="0.4.3">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <PropertyGroup>
+    <PackageOutputDir Condition="'$(PackageOutputDir)' == ''">$(MSBuildProjectDirectory)/artifacts</PackageOutputDir>
+    <ModPackageStagingDir>$(PackageOutputDir)/mod</ModPackageStagingDir>
+    <ModZipPath Condition="'$(ModZipPath)' == ''">$(PackageOutputDir)/ShareTheSpire2.zip</ModZipPath>
+  </PropertyGroup>
+
+  <Target Name="PackageMod" DependsOnTargets="Build">
+    <RemoveDir Directories="$(ModPackageStagingDir)" />
+    <MakeDir Directories="$(ModPackageStagingDir)" />
+    <Copy SourceFiles="$(TargetPath)" DestinationFiles="$(ModPackageStagingDir)/$(AssemblyName).dll" />
+    <Copy SourceFiles="$(MSBuildProjectDirectory)/mod_manifest.json" DestinationFiles="$(ModPackageStagingDir)/$(AssemblyName).json" />
+    <ZipDirectory SourceDirectory="$(ModPackageStagingDir)" DestinationFile="$(ModZipPath)" Overwrite="true" />
+    <Message Importance="high" Text="Created $(ModZipPath)" />
+  </Target>
+</Project>

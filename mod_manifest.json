@@ -1,0 +1,12 @@
+{
+  "id": "ShareTheSpire2",
+  "name": "ShareTheSpire2",
+  "author": "Xayvo; maintained by shirumesu",
+  "description": "Share the Spire",
+  "version": "v1.0.0",
+  "has_pck": false,
+  "has_dll": true,
+  "dependencies": [{ "id": "BaseLib", "min_version": null }],
+  "min_game_version": "0.107.1",
+  "affects_gameplay": true
+}
