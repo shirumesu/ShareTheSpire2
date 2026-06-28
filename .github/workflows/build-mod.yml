@@ -16,6 +16,7 @@ jobs:
     name: Build ShareTheSpire2.zip
     runs-on: [self-hosted, Windows]
     env:
+      DOTNET_INSTALL_DIR: ${{ runner.temp }}\dotnet
       STS2_PATH: ${{ vars.STS2_PATH }}
     steps:
       - name: Check out repository
